@@ -1,45 +1,49 @@
 import {
+  FormErrorMessage,
+  FormLabel,
   FormControl,
   Input,
-  FormLabel,
-  Box,
-  Heading,
   Button,
-  Spacer,
-  CircularProgress,
+  Box,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { InputGroup, InputRightElement } from "@chakra-ui/react";
 import React from "react";
 import axios from "axios";
+import { Form, useField } from "react-final-form";
+import validate from "./Validate";
 
 const AddProduct = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [brand, setbrand] = useState("");
-  const [transactionType, setTransactionType] = useState("");
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [totalOrdersValue, setTotalOrdersValue] = useState(0);
-  const [grossMargin, setGrossMargin] = useState(0);
 
-  const handleAddProduct = () => {
-    setIsLoaded(true);
+  function onSubmit(values) {
+    return new Promise((resolve) => {
+      handleAddProduct(values);
+      setTimeout(resolve, 500);
+    });
+  }
+
+  // validation end
+  const handleAddProduct = async (values) => {
     var date = new Date();
     date.toISOString();
     const data = {
-      brand: brand,
-      transactionType: transactionType,
-      totalOrders: totalOrders,
-      totalOrderValue: totalOrdersValue,
-      grossMarginPercentage: grossMargin,
+      brand: values.brand,
+      transactionType: values.transactionType,
+      totalOrders: values.totalOrders,
+      totalOrderValue: values.totalOrdersValue,
+      grossMarginPercentage: values.grossMargin,
       date: date.toISOString(),
     };
     console.log(data);
-    axios
+    await axios
       .post("http://localhost:5000/api/v1/brand-sales-daily", data)
       .then((res) => {
         console.log(res);
-        setIsLoaded(false);
+        alert(
+          "Product Added Successfully. Refresh the page to see the changes"
+        );
       })
       .catch((err) => {
         console.log(err);
@@ -57,7 +61,6 @@ const AddProduct = () => {
         </InputRightElement>
       </InputGroup>
       <Button
-        // onClick={() => setIsOpen(!isOpen)}
         style={{ float: "right", marginTop: "10px" }}
         colorScheme="facebook"
       >
@@ -65,129 +68,122 @@ const AddProduct = () => {
       </Button>
 
       {isOpen && (
-        <Box marginTop={20}>
-          <Heading>Add Product</Heading>
-          <Spacer height={5} />
-          <FormControl>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-              }}
-            >
-              <div
-                style={{
-                  width: "50%",
-                }}
+        <div
+          style={{
+            marginTop: "60px",
+          }}
+        >
+          <Form
+            data-testid="form"
+            onSubmit={onSubmit}
+            validate={validate}
+            render={({
+              handleSubmit,
+              form,
+              errors,
+              submitting,
+              pristine,
+              values,
+            }) => (
+              <Box
+                as="form"
+                p={4}
+                borderWidth="1px"
+                borderRadius="lg"
+                boxShadow="1px 1px 3px rgba(0,0,0,0.3)"
+                onSubmit={handleSubmit}
               >
-                <FormLabel>Brand</FormLabel>
-                <Input
-                  onChange={(e) => {
-                    setbrand(e.target.value);
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
                   }}
-                  width={"90%"}
-                  type="text"
-                />
-              </div>
-              <div
-                style={{
-                  width: "50%",
-                }}
-              >
-                <FormLabel>Transaction Type</FormLabel>
-                <Input
-                  onChange={(e) => {
-                    setTransactionType(e.target.value);
+                >
+                  <InputControl name="brand" label="Brand" />
+                  <InputControl
+                    name="transactionType"
+                    label="Transaction Type"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
                   }}
-                  width={"90%"}
-                  type="text"
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                marginTop: "20px",
-              }}
-            >
-              <div
-                style={{
-                  width: "50%",
-                }}
-              >
-                <FormLabel>Total Orders</FormLabel>
-                <Input
-                  onChange={(e) => {
-                    setTotalOrders(e.target.value);
+                >
+                  <InputControl name="totalOrders" label="Total Orders" />
+                  <InputControl
+                    name="totalOrdersValue"
+                    label="Total Orders Value"
+                  />
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "50%",
                   }}
-                  width={"90%"}
-                  type="number"
-                />
-              </div>
-              <div
-                style={{
-                  width: "50%",
-                }}
-              >
-                <FormLabel> Total Order Value</FormLabel>
-                <Input
-                  onChange={(e) => {
-                    setTotalOrdersValue(e.target.value);
-                  }}
-                  width={"90%"}
-                  type="number"
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                width: "100%",
-                marginTop: "20px",
-              }}
-            >
-              <div
-                style={{
-                  width: "50%",
-                }}
-              >
-                <FormLabel> Gross Margin Percentage</FormLabel>
-                <Input
-                  onChange={(e) => {
-                    setGrossMargin(e.target.value);
-                  }}
-                  width={"90%"}
-                  type="number"
-                />
-              </div>
-              <div
-                style={{
-                  width: "50%",
-                }}
-              />
-            </div>
-            <Button
-              onClick={isLoaded ? null : handleAddProduct}
-              marginTop={6}
-              width={"10%"}
-              color={"white"}
-              bg={"blue.900"}
-            >
-              {isLoaded ? (
-                <CircularProgress isIndeterminate size="24px" />
-              ) : (
-                <p>Submit</p>
-              )}
-            </Button>
-          </FormControl>
-        </Box>
+                >
+                  <InputControl name="grossMargin" label="Gross Margin" />
+                </div>
+                <ButtonGroup spacing={4}>
+                  <Button
+                    isLoading={submitting}
+                    loadingText="Submitting"
+                    variantColor="teal"
+                    type="submit"
+                  >
+                    Submit
+                  </Button>
+                  <Button
+                    variantColor="teal"
+                    variant="outline"
+                    onClick={form.reset}
+                    isDisabled={submitting || pristine}
+                  >
+                    Reset
+                  </Button>
+                </ButtonGroup>
+              </Box>
+            )}
+          />
+        </div>
       )}
     </>
   );
+};
+
+const InputControl = ({ name, label }) => {
+  const { input, meta } = useField(name);
+  return (
+    <Control name={name} my={4}>
+      <FormLabel htmlFor={name}>{label}</FormLabel>
+      <Input
+        {...input}
+        isInvalid={meta.error && meta.touched}
+        id={name}
+        placeholder={label}
+        width={"98%"}
+      />
+      <Error name={name} />
+    </Control>
+  );
+};
+
+const Control = ({ name, ...rest }) => {
+  const {
+    meta: { error, touched },
+  } = useField(name, { subscription: { touched: true, error: true } });
+  return <FormControl {...rest} isInvalid={error && touched} />;
+};
+
+const Error = ({ name }) => {
+  const {
+    meta: { error },
+  } = useField(name, { subscription: { error: true } });
+  return <FormErrorMessage>{error}</FormErrorMessage>;
 };
 
 export default AddProduct;
